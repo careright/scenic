@@ -20,7 +20,11 @@ module Scenic
         if creating_new_view?
           create_file definition.path
         else
-          copy_file previous_definition.full_path, definition.full_path
+          target = definition.full_path
+          if previous_definition.full_path.extname == ".erb"
+            target = target.sub_ext(".sql.erb")
+          end
+          copy_file previous_definition.full_path, target
         end
       end
 
@@ -78,7 +82,7 @@ module Scenic
       end
 
       def version_regex
-        /\A#{plural_file_name}_v(?<version>\d+)\.sql\z/
+        /\A#{plural_file_name}_v(?<version>\d+)\.sql(\.erb)?\z/
       end
 
       def creating_new_view?

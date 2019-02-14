@@ -7,19 +7,32 @@ module Scenic
     end
 
     def to_sql
-      File.read(full_path).tap do |content|
-        if content.empty?
-          raise "Define view query in #{path} before migrating."
-        end
+      content = File.read(full_path)
+      if content.empty?
+        raise "Define view query in #{path} before migrating."
       end
+      @erb ? ERB.new(content).result : content
     end
 
     def full_path
-      Rails.root.join(path)
+      plain = Rails.root.join(path)
+      erb = Rails.root.join(path_erb)
+      if File.exist?(erb)
+        raise "#{path} and #{path_erb} must not both exist" if File.exist?(plain)
+        @erb = true
+        erb
+      else
+        @erb = false
+        plain
+      end
     end
 
     def path
       File.join("db", "views", filename)
+    end
+
+    def path_erb
+      "#{path}.erb"
     end
 
     def version
