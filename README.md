@@ -84,6 +84,26 @@ Scenic detected that we already had an existing `search_results` view at version
 update to the version 2 schema. All that's left for you to do is tweak the
 schema in the new definition and run the `update_view` migration.
 
+## Can I use ruby code inside a template?
+
+Yes. Use the generator then change the extension from `.sql` to `.sql.erb`.
+Normal ruby ERB templating can now be used inside the definition.
+
+Avoid using this with ActiveRecord models or other code that could change
+the definition over time.
+
+A good use of this is if you have database specific code in your view, eg:
+
+```sql
+SELECT id, name,
+       <% if using_sqlserver %>
+         SYSUTCDATETIME()
+       <% else %>
+         now() at time zone 'utc'
+       <% end %> AS now
+FROM things
+```
+
 ## What if I want to change a view without dropping it?
 
 The `update_view` statement used by default will drop your view then create
